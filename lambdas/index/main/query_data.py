@@ -64,7 +64,7 @@ def handler(event: Dict[str, Any], context: Any, req: SQLApiRequest):
 	result = req.session.execute(query).fetchall()
 
 	data = [dict(zip(column_names, row)) for row in result]
-	return return_data(data)
+	return return_data('success', data)
 
 
 # print(handler({ 'pathParameters': { 'table': 'students' }, 'queryStringParameters': {

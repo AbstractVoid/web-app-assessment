@@ -88,22 +88,24 @@ export class BackendStack extends cdk.Stack {
         actions: ["secretsmanager:GetSecretValue"],
         resources: [this.secret.secretArn],
       }),
+      timeout: cdk.Duration.seconds(20),
     };
 
+    const corsOptions: apigw.CorsOptions = {
+      allowOrigins: apigw.Cors.ALL_ORIGINS,
+      allowMethods: apigw.Cors.ALL_METHODS,
+    };
     const api = new apigw.RestApi(this, "BackendApi");
     const apiKey = api.addApiKey("APIKey", {
       value: process.env.BACKEND_API_KEY!,
-      defaultCorsPreflightOptions: {
-        allowOrigins: apigw.Cors.ALL_ORIGINS,
-        allowMethods: apigw.Cors.ALL_METHODS,
-      }
+      defaultCorsPreflightOptions: corsOptions,
     });
     const plan = api.addUsagePlan("UsagePlan", {
       apiKey,
       throttle: {
         rateLimit: 5,
-        burstLimit: 100
-      }
+        burstLimit: 100,
+      },
     });
     plan.addApiStage({ api, stage: api.deploymentStage });
 
@@ -121,22 +123,18 @@ export class BackendStack extends cdk.Stack {
     });
 
     const tableResource = api.root.addResource("{table}");
-    tableResource.addMethod(
-      "GET",
-      new apigw.LambdaIntegration(queryFn, {
-        requestTemplates: {
-          "application/json": JSON.stringify({
-            rawQueryString: "$input.params().querystring",
-          }),
-        },
-      }),
-      { apiKeyRequired: true }
-    );
+    tableResource.addCorsPreflight(corsOptions);
+
+    tableResource.addMethod("GET", new apigw.LambdaIntegration(queryFn), {
+      apiKeyRequired: true,
+    });
     tableResource.addMethod("POST", new apigw.LambdaIntegration(insertFn), {
       apiKeyRequired: true,
     });
 
     const itemIdResource = tableResource.addResource("{itemId}");
+    itemIdResource.addCorsPreflight(corsOptions);
+
     itemIdResource.addMethod("DELETE", new apigw.LambdaIntegration(deleteFn), {
       apiKeyRequired: true,
     });

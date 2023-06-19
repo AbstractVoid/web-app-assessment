@@ -57,15 +57,23 @@ def get_record_type(table_name: str) -> Base:
     return record_type
 
 
-def return_data(data: Any, status=200) -> dict:
+def return_data(result: str, data: Any, status=200) -> dict:
     resp_headers = {
         'Content-Type': 'application/json',
         'Access-Control-Allow-Origin': '*',
+        'Access-Control-Allow-Headers': 'Content-Type',
+        'Access-Control-Allow-Methods': '*'
     }
+
+    resp_data = {
+        'result': result
+    }
+    if data:
+        resp_data['data'] = data
 
     return {
         'isBase64Encoded': False,
         'statusCode': status,
         'headers': resp_headers,
-        'body': json.dumps(data, default=str)
+        'body': json.dumps(resp_data, default=str)
     }

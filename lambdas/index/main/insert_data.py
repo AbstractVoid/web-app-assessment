@@ -15,7 +15,7 @@ def handler(event: Dict[str, Any], context: Any, req: SQLApiRequest):
     req.session.flush()
 
     data = { key: val  for key, val in record.__dict__.items() if not key.startswith('_') }
-    return return_data({ 'result': 'success', 'data': data })
+    return return_data('success', data)
 
 
 # from datetime import datetime

@@ -12,9 +12,9 @@ def handler(event: Dict[str, Any], context: Any, req: SQLApiRequest):
     if item is not None:
         req.session.delete(item)
     else:
-        return return_data({ 'result': 'not_found', 'message': f'No item found in {req.table_name} table with ID {req.item_id}' })
+        return return_data('not_found', { 'message': f'No item found in {req.table_name} table with ID {req.item_id}' }, 400)
 
-    return return_data({ 'result': 'success' })
+    return return_data('success', None)
 
 
 # print(handler({

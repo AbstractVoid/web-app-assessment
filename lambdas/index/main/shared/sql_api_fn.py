@@ -35,7 +35,7 @@ def sql_api_fn(func: Callable[[Dict[str, Any], Any, SQLApiRequest], dict]):
         except Exception as e:
             session.rollback()
             print_exc()
-            result = return_data({ 'status': 'error', 'error': format_exc() }, 500)
+            result = return_data('error', { 'error': format_exc() }, 500)
         finally:
             session.close()
 
