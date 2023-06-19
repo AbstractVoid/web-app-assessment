@@ -12,6 +12,7 @@ def handler(event: Dict[str, Any], context: Any, req: SQLApiRequest):
     record_type = get_record_type(req.table_name)
     record = record_type(**new_data)
     req.session.add(record)
+    req.session.flush()
 
     data = { key: val  for key, val in record.__dict__.items() if not key.startswith('_') }
     return return_data({ 'result': 'success', 'data': data })
