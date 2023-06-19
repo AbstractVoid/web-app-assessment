@@ -9,32 +9,41 @@ import * as iam from "@aws-cdk/aws-iam";
 import path = require("path");
 
 export class BackendStack extends cdk.Stack {
+  private database: rds.DatabaseInstance;
+  private vpc: ec2.IVpc;
+  private secret: secretsmanager.Secret;
+
   constructor(scope: cdk.Construct, id: string, props?: cdk.StackProps) {
     super(scope, id, props);
 
-    const vpc = ec2.Vpc.fromLookup(this, "VPC", {
+    this.createDatabase();
+    this.createApi();
+  }
+
+  createDatabase() {
+    this.vpc = ec2.Vpc.fromLookup(this, "VPC", {
       isDefault: true,
     });
 
-    const secret = new secretsmanager.Secret(this, 'DBSecret', {
+    this.secret = new secretsmanager.Secret(this, "DBSecret", {
       generateSecretString: {
-        secretStringTemplate: JSON.stringify({ username: 'dbmaster' }),
-        generateStringKey: 'password',
+        secretStringTemplate: JSON.stringify({ username: "dbmaster" }),
+        generateStringKey: "password",
         excludeCharacters: '"/@ ',
         passwordLength: 30,
-      }
+      },
     });
 
-    const database = new rds.DatabaseInstance(this, "WebAppDB", {
+    this.database = new rds.DatabaseInstance(this, "WebAppDB", {
       engine: rds.DatabaseInstanceEngine.sqlServerEx({
         version: rds.SqlServerEngineVersion.VER_15,
       }),
-      credentials: rds.Credentials.fromSecret(secret),
+      credentials: rds.Credentials.fromSecret(this.secret),
       instanceType: ec2.InstanceType.of(
         ec2.InstanceClass.BURSTABLE3,
         ec2.InstanceSize.SMALL
       ),
-      vpc,
+      vpc: this.vpc,
       vpcSubnets: {
         subnetType: ec2.SubnetType.PUBLIC,
       },
@@ -45,10 +54,14 @@ export class BackendStack extends cdk.Stack {
       publiclyAccessible: true,
     });
 
-    (database.node.defaultChild as cdk.CfnResource).addDependsOn(secret.node.defaultChild as cdk.CfnResource);
+    (this.database.node.defaultChild as cdk.CfnResource).addDependsOn(
+      this.secret.node.defaultChild as cdk.CfnResource
+    );
+  }
 
+  createApi() {
     const securityGroup = new ec2.SecurityGroup(this, "LambdaSG", {
-      vpc,
+      vpc: this.vpc,
       allowAllOutbound: true,
     });
 
@@ -58,26 +71,75 @@ export class BackendStack extends cdk.Stack {
       "Allow SQL inbound connections"
     );
 
-    const fn = createLambdaFunction(this, "Test", {
-      handler: "main.main.handler",
+    const lambdaProps: IAutomationFunctionProps = {
       requirementsFile: "lambdas",
       memorySize: 128,
-      vpc,
+      vpc: this.vpc,
       vpcSubnets: {
         subnetType: ec2.SubnetType.PRIVATE_WITH_NAT,
       },
       securityGroups: [securityGroup],
       environment: {
-        SECRET_ARN: secret.secretArn,
-        DB_HOST: database.dbInstanceEndpointAddress,
-        DB_PORT: database.dbInstanceEndpointPort
+        SECRET_ARN: this.secret.secretArn,
+        DB_HOST: this.database.dbInstanceEndpointAddress,
+        DB_PORT: this.database.dbInstanceEndpointPort,
       },
+      initialPolicy: new iam.PolicyStatement({
+        actions: ["secretsmanager:GetSecretValue"],
+        resources: [this.secret.secretArn],
+      }),
+    };
+
+    const api = new apigw.RestApi(this, "BackendApi");
+    const apiKey = api.addApiKey("APIKey", {
+      value: process.env.BACKEND_API_KEY!,
+      defaultCorsPreflightOptions: {
+        allowOrigins: apigw.Cors.ALL_ORIGINS,
+        allowMethods: apigw.Cors.ALL_METHODS,
+      }
+    });
+    const plan = api.addUsagePlan("UsagePlan", {
+      apiKey,
+      throttle: {
+        rateLimit: 5,
+        burstLimit: 100
+      }
+    });
+    plan.addApiStage({ api, stage: api.deploymentStage });
+
+    const queryFn = createLambdaFunction(this, "QueryFn", {
+      handler: "main.query_data.handler",
+      ...lambdaProps,
+    });
+    const insertFn = createLambdaFunction(this, "InsertFn", {
+      handler: "main.insert_data.handler",
+      ...lambdaProps,
+    });
+    const deleteFn = createLambdaFunction(this, "DeleteFn", {
+      handler: "main.delete_data.handler",
+      ...lambdaProps,
     });
 
-    fn.addToRolePolicy(new iam.PolicyStatement({
-      actions: ["secretsmanager:GetSecretValue"],
-      resources: [secret.secretArn]
-    }))
+    const tableResource = api.root.addResource("{table}");
+    tableResource.addMethod(
+      "GET",
+      new apigw.LambdaIntegration(queryFn, {
+        requestTemplates: {
+          "application/json": JSON.stringify({
+            rawQueryString: "$input.params().querystring",
+          }),
+        },
+      }),
+      { apiKeyRequired: true }
+    );
+    tableResource.addMethod("POST", new apigw.LambdaIntegration(insertFn), {
+      apiKeyRequired: true,
+    });
+
+    const itemIdResource = tableResource.addResource("{itemId}");
+    itemIdResource.addMethod("DELETE", new apigw.LambdaIntegration(deleteFn), {
+      apiKeyRequired: true,
+    });
   }
 }
 
@@ -91,6 +153,7 @@ export interface IAutomationFunctionProps {
   vpc?: ec2.IVpc;
   vpcSubnets?: ec2.SubnetSelection;
   securityGroups?: ec2.ISecurityGroup[];
+  initialPolicy?: iam.PolicyStatement;
 }
 
 function createLambdaFunction(
@@ -117,43 +180,8 @@ function createLambdaFunction(
     memorySize: props.memorySize ?? undefined,
     environment: props.environment,
     retryAttempts: props.retryAttempts ?? 0,
+    initialPolicy: props.initialPolicy ? [props.initialPolicy] : undefined,
   });
 
   return func;
-}
-
-function createApi(
-  scope: cdk.Construct,
-  func: lambda.IFunction,
-  apiId: string,
-  version: number,
-  path: string,
-  apiKey: string
-) {
-  const corsOptions: apigw.CorsOptions = {
-    allowOrigins: apigw.Cors.ALL_ORIGINS,
-    allowMethods: apigw.Cors.ALL_METHODS,
-  };
-  const api = new apigw.LambdaRestApi(scope, apiId, {
-    handler: func,
-    apiKeySourceType: apigw.ApiKeySourceType.HEADER,
-    proxy: false,
-    defaultCorsPreflightOptions: corsOptions,
-  });
-
-  const v1 = api.root.addResource(`v${version}`, {
-    defaultCorsPreflightOptions: corsOptions,
-  });
-  const update = v1.addResource(path, {
-    defaultCorsPreflightOptions: corsOptions,
-  });
-  update.addMethod("POST", undefined, { apiKeyRequired: true });
-  const plan = api.addUsagePlan("MainUsagePlan", {
-    apiStages: [{ stage: api.deploymentStage }],
-  });
-  plan.addApiKey(
-    api.addApiKey("MainApiKey", {
-      value: apiKey,
-    })
-  );
 }
