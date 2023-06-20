@@ -13,7 +13,7 @@ function RenderItems<T extends ItemBase>(
   return error || (items.length === 0 && !fetching) ? (
     <NoItems error={error} />
   ) : (
-    <table className="mx-auto">
+    <table className="mx-auto max-w-3xl">
       <tbody className="border-1 border-slate-500">
         <tr>
           {columnNames.map((name, i) => {

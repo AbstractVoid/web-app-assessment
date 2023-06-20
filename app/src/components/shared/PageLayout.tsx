@@ -1,5 +1,8 @@
 import React from "react";
 import Link from "next/link";
+import { ToastContainer } from "react-toastify";
+import 'react-toastify/dist/ReactToastify.css';
+
 import Container from "./Container";
 
 const PageLayout: React.FC<{ children?: React.ReactNode }> = ({ children }) => {
@@ -29,6 +32,7 @@ const PageLayout: React.FC<{ children?: React.ReactNode }> = ({ children }) => {
         </Link>
       </div>
       <Container>{children}</Container>
+      <ToastContainer />
     </div>
   );
 };

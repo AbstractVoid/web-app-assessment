@@ -1,10 +1,11 @@
 import React from "react";
 
 import { ItemBase, Course, Result, Student } from "@/shared/types";
-import { queryItems, deleteItem } from "@/api/helpers";
+import { deleteItem } from "@/api/helpers";
 import { TableName } from "@/api/types";
 import { XMarkIcon } from "@heroicons/react/24/solid";
 import { getFullName } from "@/shared/helpers";
+import { toast } from 'react-toastify'
 
 export interface IItemSummary<T extends ItemBase> {
   loading: boolean;
@@ -37,8 +38,8 @@ const ItemSummaryBase: React.FC<IItemSummaryBase> = ({
       tableName,
       itemId: itemId!,
     });
+    toast("Successfully deleted item");
   };
-
 
   return loading ? (
     <>
@@ -57,8 +58,8 @@ const ItemSummaryBase: React.FC<IItemSummaryBase> = ({
       {children}
       {canDelete && (
         <td className="flex space-x-4">
-          <button onClick={onClickDelete} className="border-transparent">
-            <XMarkIcon className="text-red-500 text-4xl w-5 h-5" />
+          <button onClick={onClickDelete} className="outline-0 group">
+            <XMarkIcon className="text-red-500 text-4xl w-7 h-7 my-auto transition group-hover:scale-[120%]" />
           </button>
         </td>
       )}

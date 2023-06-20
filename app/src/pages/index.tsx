@@ -10,7 +10,7 @@ import { CourseItemRenderer, StudentItemRenderer } from "@/components/summaries/
 const HomePage: NextPage = () => {
   return (
     <PageLayout>
-      
+      <p className="pt-5 text-center font-bold text-4xl pb-5">Home Page</p>
     </PageLayout>
   );
 };

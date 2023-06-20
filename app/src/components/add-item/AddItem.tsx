@@ -5,6 +5,7 @@ import { insertItem } from "@/api/helpers";
 import { TableName } from "@/api/types";
 import IFormInputs from "./formInputs";
 import { classNames } from "@/shared/helpers";
+import { toast } from 'react-toastify'
 
 export interface IAddItem<T extends ItemBase> {
   tableName: TableName;
@@ -26,6 +27,7 @@ function AddItem<T extends ItemBase>({ tableName, FormInputs }: IAddItem<T>) {
         .then((resp) => {
           if (resp.result === "success") {
             setItemData(undefined);
+            toast("Successfully added item");
           }
         })
         .catch(() => {

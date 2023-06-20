@@ -16,6 +16,7 @@ table td,
 table th {
   border: 1px solid #ddd;
   padding: 8px;
+  height: 3rem;
 }
 
 /* table tr:nth-child(even) {
