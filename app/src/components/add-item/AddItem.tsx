@@ -3,24 +3,18 @@ import React from "react";
 import { ItemBase } from "@/shared/types";
 import { insertItem } from "@/api/helpers";
 import { TableName } from "@/api/types";
-import IFormRenderer from "./formRenderer";
+import IFormInputs from "./formInputs";
 import { classNames } from "@/shared/helpers";
 
 export interface IAddItem<T extends ItemBase> {
   tableName: TableName;
-  FormRenderer: (props: IFormRenderer<T>) => React.ReactNode;
+  FormInputs: (props: IFormInputs<T>) => React.ReactNode;
 }
 
-function AddItem<T extends ItemBase>({ tableName, FormRenderer }: IAddItem<T>) {
+function AddItem<T extends ItemBase>({ tableName, FormInputs }: IAddItem<T>) {
   const [itemData, setItemData] = React.useState<T>();
   const [submitting, setSubmitting] = React.useState(false);
   const [canSubmit, setCanSubmit] = React.useState(false);
-
-  const updateData = (attr: string, val: any) => {
-    const newData: any = { ...itemData };
-    newData[attr] = val;
-    setItemData(newData);
-  };
 
   const onSubmit = () => {
     setSubmitting(true);
@@ -45,10 +39,10 @@ function AddItem<T extends ItemBase>({ tableName, FormRenderer }: IAddItem<T>) {
 
   return (
     <div className="flex flex-col">
-      <div className={classNames("mx-auto pt-4", submitting ? "pointer-events-none opacity-50" : "")}>
-        {FormRenderer({
+      <div className={classNames("mx-auto pt-4 space-y-5", submitting ? "pointer-events-none opacity-50" : "")}>
+        {FormInputs({
           itemData,
-          updateData,
+          setItemData,
           setCanSubmit,
         })}
       </div>

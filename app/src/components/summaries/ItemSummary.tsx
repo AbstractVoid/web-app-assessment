@@ -3,7 +3,8 @@ import React from "react";
 import { ItemBase, Course, Result, Student } from "@/shared/types";
 import { queryItems, deleteItem } from "@/api/helpers";
 import { TableName } from "@/api/types";
-import { XMarkIcon } from "@heroicons/react/20/solid";
+import { XMarkIcon } from "@heroicons/react/24/solid";
+import { getFullName } from "@/shared/helpers";
 
 export interface IItemSummary<T extends ItemBase> {
   loading: boolean;
@@ -80,9 +81,7 @@ export const StudentItemRenderer: React.FC<IItemSummary<Student>> = ({
     >
       {item && (
         <>
-          <td>
-            {item.first_name} {item.family_name}
-          </td>
+          <td>{getFullName(item)}</td>
           <td>{item.dob}</td>
           <td>{item.email}</td>
         </>

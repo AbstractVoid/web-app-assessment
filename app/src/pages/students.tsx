@@ -9,7 +9,7 @@ import PageLayout from "@/components/shared/PageLayout";
 const StudentsPage: NextPage = () => {
   return (
     <PageLayout>
-      <p className="pt-5 text-center font-bold text-4xl pb-5">STUDENTS</p>
+      <p className="pt-5 text-center font-bold text-4xl pb-5">Students</p>
       <ItemSummaries<Student>
         tableName="students"
         columnNames={["Name & Family Name", "DOB", "Email", "Delete"]}

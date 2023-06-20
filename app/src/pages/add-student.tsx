@@ -4,15 +4,15 @@ import React from "react";
 import PageLayout from "@/components/shared/PageLayout";
 import AddItem from "@/components/add-item/AddItem";
 import { Student } from "@/shared/types";
-import StudentForm from "@/components/add-item/forms/StudentForm";
+import StudentFormInputs from "@/components/add-item/form-inputs/StudentFormInputs";
 
 const AddStudentPage: NextPage = () => {
   return (
     <PageLayout>
-      <p className="pt-5 text-center font-bold text-4xl pb-5">ADD STUDENT</p>
+      <p className="pt-5 text-center font-bold text-4xl pb-5">Add Student</p>
       <AddItem<Student>
         tableName="students"
-        FormRenderer={props => <StudentForm {...props} />}
+        FormInputs={props => <StudentFormInputs {...props} />}
       />
     </PageLayout>
   );

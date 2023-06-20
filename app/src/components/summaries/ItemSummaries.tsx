@@ -1,11 +1,12 @@
 import React from "react";
 
 import { useItems } from "@/shared/hooks";
-import { Course, ItemBase, Result, Student } from "@/shared/types";
+import { Course, ItemBase, Result, Student, StudentCol } from "@/shared/types";
 import { TableName } from "@/api/types";
 import { IItemSummary, ResultItemRenderer } from "./ItemSummary";
 import RenderItems from "./RenderItems";
 import { queryItems } from "@/api/helpers";
+import { getFullName } from "@/shared/helpers";
 
 interface IItemsSummary<T extends ItemBase> {
   tableName: TableName;
@@ -28,7 +29,7 @@ export function ResultItemSummaries() {
 
       queryItems<Student>({
         tableName: "students",
-        fields: ["id", "first_name", "family_name"],
+        fields: [StudentCol.Id, StudentCol.FirstName, StudentCol.FamilyName],
         filterColsEqual: { id: props.items.map(item => item.student_id) }
       }).then(resp => {
         if (resp.result === 'success') {
@@ -50,11 +51,11 @@ export function ResultItemSummaries() {
   React.useEffect(() => {
     if (students.length > 0 && courses.length > 0) {
       const newItems = props.items.map(item => {
-        const student = students.find(student => student.id === item.student_id);
+        const student = students.find(student => student.id === item.student_id)!;
         const course = courses.find(course => course.id === item.course_id);
         return {
           ...item,
-          student_name: `${student?.first_name} ${student?.family_name}`,
+          student_name: getFullName(student),
           course_name: course?.course_name
         }
       });

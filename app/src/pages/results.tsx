@@ -8,7 +8,7 @@ import PageLayout from "@/components/shared/PageLayout";
 const ResultsPage: NextPage = () => {
   return (
     <PageLayout>
-      <p className="pt-5 text-center font-bold text-4xl pb-5">RESULTS</p>
+      <p className="pt-5 text-center font-bold text-4xl pb-5">Results</p>
       <ResultItemSummaries />
     </PageLayout>
   );

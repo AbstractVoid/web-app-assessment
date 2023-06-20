@@ -1,24 +1,44 @@
+export enum StudentCol {
+  Id = "id",
+  FirstName = "first_name",
+  FamilyName = "family_name",
+  DateOfBirth = "dob",
+  Email = "email",
+}
+
+export enum CourseCol {
+  Id = "id",
+  CourseName = "course_name",
+}
+
+export enum ResultCol {
+  Id = "id",
+  StudentId = "student_id",
+  CourseId = "course_id",
+  Score = "score",
+}
+
 export interface ItemBase {
   id: number;
 }
 
 export interface Student extends ItemBase {
-  first_name: string;
-  family_name: string;
-  dob: string;
-  email: string;
+  [StudentCol.FirstName]: string;
+  [StudentCol.FamilyName]: string;
+  [StudentCol.DateOfBirth]: string;
+  [StudentCol.Email]: string;
 }
 
 export interface Course extends ItemBase {
-  course_name: string;
+  [CourseCol.CourseName]: string;
 }
 
 export type Score = "A" | "B" | "C" | "D" | "E" | "F";
 
 export interface Result extends ItemBase {
-  student_id: number;
+  [ResultCol.StudentId]: number;
   student_name?: string;
-  course_id: number;
+  [ResultCol.CourseId]: number;
   course_name?: string;
-  score: Score;
+  [ResultCol.Score]: Score;
 }

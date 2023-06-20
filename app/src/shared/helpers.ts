@@ -1,3 +1,5 @@
+import { Student } from "./types";
+
 export const classNames = (
   ...classes: (false | null | undefined | string)[]
 ): string => classes.filter(Boolean).join(" ");
@@ -28,4 +30,8 @@ export function isValidPastDate(value: string) {
   } catch {
     return false;
   }
+}
+
+export function getFullName(student: Student) {
+  return `${student.first_name} ${student.family_name}`;
 }

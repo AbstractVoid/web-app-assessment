@@ -1,13 +1,13 @@
 import React from "react";
 
-import IFormRenderer from "../formRenderer";
-import { Student } from "@/shared/types";
+import IFormRenderer from "../formInputs";
+import { Student, StudentCol } from "@/shared/types";
 import FormTextInput from "../FormTextInput";
 import { isValidPastDate } from "@/shared/helpers";
 
-function StudentForm({
+function StudentFormInputs({
   itemData,
-  updateData,
+  setItemData,
   setCanSubmit,
 }: IFormRenderer<Student>) {
   const [validEmail, setValidEmail] = React.useState(false);
@@ -22,13 +22,13 @@ function StudentForm({
     }
 
     setValidDob(isValidPastDate(value));
-    updateData("dob", value);
+    setItemData({ ...itemData, [StudentCol.DateOfBirth]: value });
   };
 
   const updateEmail = (value: string) => {
     const emailRegex = /^[^\s]+@[^\s]+\.[^\s]+$/;
     setValidEmail(Boolean(value.match(emailRegex)));
-    updateData("email", value);
+    setItemData({ ...itemData, [StudentCol.Email]: value });
   };
 
   React.useEffect(() => {
@@ -36,16 +36,16 @@ function StudentForm({
   }, [itemData]);
 
   return (
-    <div className="space-y-5">
+    <>
       <FormTextInput
         title="First Name"
         value={itemData?.first_name}
-        onChange={(val) => updateData("first_name", val)}
+        onChange={(val) => setItemData({ ...itemData, [StudentCol.FirstName]: val })}
       />
       <FormTextInput
         title="Last Name"
         value={itemData?.family_name}
-        onChange={(val) => updateData("family_name", val)}
+        onChange={(val) => setItemData({ ...itemData, [StudentCol.FamilyName]: val})}
       />
       <FormTextInput
         title="Date of Birth"
@@ -53,7 +53,11 @@ function StudentForm({
         placeholder="MM/DD/YYYY"
         onChange={(val) => updateDob(val)}
         errorMessage={!validDob && itemData?.dob ? "Invalid Date of birth" : ""}
-        errorDescription={!validDob && itemData?.dob ? "Should be MM/DD/YYYY and be a date in the past" : ""}
+        errorDescription={
+          !validDob && itemData?.dob
+            ? "Should be MM/DD/YYYY and be a date in the past"
+            : ""
+        }
       />
       <FormTextInput
         title="Email"
@@ -62,8 +66,8 @@ function StudentForm({
         onChange={(val) => updateEmail(val)}
         errorMessage={!validEmail && itemData?.email ? "Invalid email" : ""}
       />
-    </div>
+    </>
   );
 }
 
-export default StudentForm;
+export default StudentFormInputs;
