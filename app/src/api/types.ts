@@ -19,8 +19,8 @@ export interface APIInputBase {
 
 export interface QueryInput extends APIInputBase {
   fields?: string[];
-  filterColsEqual?: { [key: string]: string };
-  filterColsNotEqual?: { [key: string]: string };
+  filterColsEqual?: { [key: string]: any };
+  filterColsNotEqual?: { [key: string]: any };
 }
 
 export interface InsertInput<T> extends APIInputBase {

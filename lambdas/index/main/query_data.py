@@ -11,12 +11,14 @@ class Query(TypedDict):
     fields: List[str] or None
     fields_equal: dict or None
     fields_not_equal: dict or None
+    fields_in: dict or None
+    fields_notin: dict or None
 
 
 def get_query_filters(params: dict) -> Query:
 	query_data: Query = {
 		'fields_equal': {},
-		'fields_not_equal': {}
+		'fields_not_equal': {},
 	}
 
 	if not params:
@@ -32,8 +34,11 @@ def get_query_filters(params: dict) -> Query:
 					filter_attr, param_splitter = 'fields_not_equal', '!='
 				else:
 					filter_attr, param_splitter = 'fields_equal', '='
-				
+
 				field, filter_val = filter.split(param_splitter)
+				if '~' in filter_val:
+					filter_val = filter_val.split('~')
+				
 				query_data[filter_attr][field] = filter_val
 		else:
 			print(f'Unkown parameter key: {key}')
@@ -56,10 +61,16 @@ def handler(event: Dict[str, Any], context: Any, req: SQLApiRequest):
 	query = req.session.query(*[getattr(record_type, name) for name in column_names])
 
 	for col, value in query_data.get('fields_equal', {}).items():
-		query = query.filter(getattr(record_type, col) == value)
+		if isinstance(value, list):
+			query = query.filter(getattr(record_type, col).in_(value))
+		else:	
+			query = query.filter(getattr(record_type, col) == value)
 
 	for col, value in query_data.get('fields_not_equal', {}).items():
-		query = query.filter(getattr(record_type, col) != value)
+		if isinstance(value, list):
+			query = query.filter(getattr(record_type, col).notin_(value))
+		else:
+			query = query.filter(getattr(record_type, col) != value)
 
 	result = req.session.execute(query).fetchall()
 
@@ -69,5 +80,5 @@ def handler(event: Dict[str, Any], context: Any, req: SQLApiRequest):
 
 # print(handler({ 'pathParameters': { 'table': 'students' }, 'queryStringParameters': {
 # 	"fields": "first_name",
-# 	"filters": "first_name=Test,family_name!=Tom"
+# 	"filters": "id=17~1"
 # }}, None))

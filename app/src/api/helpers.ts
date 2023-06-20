@@ -32,15 +32,15 @@ export async function queryItems<T>(input: QueryInput): Promise<QueryResp<T>> {
     const filter = [];
 
     if (input.filterColsEqual) {
-        for (let [key, value] of Object.entries(input.filterColsEqual!)) {
-          filter.push(`${key}=${value}`);
-        }
+      for (let [key, value] of Object.entries(input.filterColsEqual)) {
+        filter.push(`${key}=${Array.isArray(value) ? value.join("~") : value}`);
+      }
     }
 
     if (input.filterColsNotEqual) {
-        for (let [key, value] of Object.entries(input.filterColsNotEqual!)) {
-          filter.push(`${key}!=${value}`);
-        }
+      for (let [key, value] of Object.entries(input.filterColsNotEqual)) {
+        filter.push(`${key}!=${Array.isArray(value) ? value.join("~") : value}`);
+      }
     }
 
     query.push(`filter=${filter.join(",")}`);

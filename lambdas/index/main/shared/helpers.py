@@ -66,10 +66,9 @@ def return_data(result: str, data: Any, status=200) -> dict:
     }
 
     resp_data = {
-        'result': result
+        'result': result,
+        'data': data
     }
-    if data:
-        resp_data['data'] = data
 
     return {
         'isBase64Encoded': False,
