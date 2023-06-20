@@ -1,14 +1,14 @@
 import type { NextPage } from "next";
 import React from "react";
 
-import Container from "@/components/shared/Container";
 import { ItemSummaries } from "@/components/summaries/ItemSummaries";
 import { Student } from "@/shared/types";
 import { StudentItemRenderer } from "@/components/summaries/ItemSummary";
+import PageLayout from "@/components/shared/PageLayout";
 
-const HomePage: NextPage = () => {
+const StudentsPage: NextPage = () => {
   return (
-    <Container>
+    <PageLayout>
       <p className="pt-5 text-center font-bold text-4xl pb-5">STUDENTS</p>
       <ItemSummaries<Student>
         tableName="students"
@@ -17,8 +17,8 @@ const HomePage: NextPage = () => {
           <StudentItemRenderer {...props} />
         )}
       />
-    </Container>
+    </PageLayout>
   );
 };
 
-export default HomePage;
+export default StudentsPage;

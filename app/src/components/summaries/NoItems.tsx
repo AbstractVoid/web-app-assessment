@@ -5,8 +5,9 @@ interface IItemsNotFound {
 }
 
 const NoItems: React.FC<IItemsNotFound> = () => {
+    // TODO: Add proper html
     return (
-        <p>NO ITEMS</p>
+        <p className="m-auto text-center pt-12 text-2xl">NO ITEMS</p>
     )
 }
 
