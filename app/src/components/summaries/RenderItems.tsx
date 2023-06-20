@@ -7,13 +7,19 @@ import NoItems from "./NoItems";
 
 function RenderItems<T extends ItemBase>(
   { fetching, error, items, setItems }: IUseItems<T>,
+  columnNames: string[],
   itemRenderer: (props: IItemSummary<T>) => React.ReactNode
 ) {
   return error || (items.length === 0 && !fetching) ? (
     <NoItems error={error} />
   ) : (
     <table className="mx-auto">
-      <tbody>
+      <tbody className="border-1 border-slate-500">
+        <tr>
+          {columnNames.map((name, i) => {
+              return <th key={i}>{name}</th>
+          })}
+        </tr>
         {(items.length > 0 ? items : Array(5).fill(0)).map((item, i) => {
           return (
             <React.Fragment key={i}>

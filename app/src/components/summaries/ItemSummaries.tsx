@@ -9,12 +9,13 @@ import { queryItems } from "@/api/helpers";
 
 interface IItemsSummary<T extends ItemBase> {
   tableName: TableName;
+  columnNames: string[],
   itemRenderer: (props: IItemSummary<T>) => React.ReactNode;
 }
 
-export function ItemSummaries<T extends ItemBase>({ tableName, itemRenderer }: IItemsSummary<T>) {
+export function ItemSummaries<T extends ItemBase>({ tableName, columnNames, itemRenderer }: IItemsSummary<T>) {
   const props = useItems<T>({ tableName });
-  return RenderItems<T>(props, itemRenderer);
+  return RenderItems<T>(props, columnNames, itemRenderer);
 }
 
 export function ResultItemSummaries() {
@@ -27,7 +28,7 @@ export function ResultItemSummaries() {
 
       queryItems<Student>({
         tableName: "students",
-        fields: ["id", "first_name", "last_name"],
+        fields: ["id", "first_name", "family_name"],
         filterColsEqual: { id: props.items.map(item => item.student_id) }
       }).then(resp => {
         if (resp.result === 'success') {
@@ -61,5 +62,5 @@ export function ResultItemSummaries() {
     }
   }, [students, courses]);
 
-  return RenderItems(props, ResultItemRenderer);
+  return RenderItems(props, ["Course", "Student", "Score"], ResultItemRenderer);
 }

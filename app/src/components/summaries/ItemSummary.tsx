@@ -3,6 +3,7 @@ import React from "react";
 import { ItemBase, Course, Result, Student } from "@/shared/types";
 import { queryItems, deleteItem } from "@/api/helpers";
 import { TableName } from "@/api/types";
+import { XMarkIcon } from '@heroicons/react/20/solid'
 
 export interface IItemSummary<T extends ItemBase> {
   loading: boolean;
@@ -12,6 +13,7 @@ export interface IItemSummary<T extends ItemBase> {
 
 interface IItemSummaryBase {
   tableName: TableName;
+  columns: number;
   itemId?: number;
   loading: boolean;
   canDelete?: boolean;
@@ -21,9 +23,10 @@ interface IItemSummaryBase {
 
 const ItemSummaryBase: React.FC<IItemSummaryBase> = ({
   tableName,
+  columns,
   itemId,
   loading,
-  canDelete,
+  canDelete = true,
   onDelete,
   children,
 }) => {
@@ -51,14 +54,18 @@ const ItemSummaryBase: React.FC<IItemSummaryBase> = ({
 
   return loading || deleting ? (
     <>
-      <td>LOADING</td>
+      {Array(columns).fill(0).map((_, i) => {
+        return <td key={i}>LOADING</td>
+      })}
     </>
   ) : (
     <>
       {children}
       {canDelete && (
         <td className="flex space-x-4">
-          <button onClick={onClickDelete}>DELETE</button>
+          <button onClick={onClickDelete} className="border-transparent">
+            <XMarkIcon className="text-red-500 text-4xl w-5 h-5" />
+          </button>
         </td>
       )}
     </>
@@ -71,11 +78,10 @@ export const StudentItemRenderer: React.FC<IItemSummary<Student>> = ({
   onDelete,
 }) => {
   return (
-    <ItemSummaryBase tableName="students" itemId={item?.id} loading={loading} onDelete={onDelete}>
+    <ItemSummaryBase tableName="students" columns={4} itemId={item?.id} loading={loading} onDelete={onDelete}>
       {item && (
         <>
-          <td>{item.first_name}</td>
-          <td>{item.family_name}</td>
+          <td>{item.first_name} {item.family_name}</td>
           <td>{item.dob}</td>
           <td>{item.email}</td>
         </>
@@ -90,7 +96,7 @@ export const CourseItemRenderer: React.FC<IItemSummary<Course>> = ({
   onDelete,
 }) => {
   return (
-    <ItemSummaryBase tableName="courses" itemId={item?.id} loading={loading} onDelete={onDelete}>
+    <ItemSummaryBase tableName="courses" columns={2} itemId={item?.id} loading={loading} onDelete={onDelete}>
       {item && (
         <>
           <td>{item.course_name}</td>
@@ -106,9 +112,11 @@ export const ResultItemRenderer: React.FC<IItemSummary<Result>> = ({
   onDelete,
 }) => {
   return (
-    <ItemSummaryBase tableName="results" itemId={item?.id} loading={loading || !item.course_name} onDelete={onDelete}>
+    <ItemSummaryBase tableName="results" columns={3} itemId={item?.id} loading={loading || !item.course_name} onDelete={onDelete} canDelete={false}>
       {item && (
         <>
+          <td>{item.course_name}</td>
+          <td>{item.student_name}</td>
           <td>{item.score}</td>
         </>
       )}
