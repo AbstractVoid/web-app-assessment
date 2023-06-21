@@ -12,7 +12,7 @@ const StudentsPage: NextPage = () => {
       <p className="pt-5 text-center font-bold text-4xl pb-5">Students</p>
       <ItemSummaries<Student>
         tableName="students"
-        columnNames={["Name & Family Name", "DOB", "Email", "Delete"]}
+        columnNames={["Name & Family Name", "Date of Birth", "Email", "Delete"]}
         itemRenderer={(props) => (
           <StudentItemRenderer {...props} />
         )}

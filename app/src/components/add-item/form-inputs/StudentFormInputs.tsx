@@ -3,7 +3,7 @@ import React from "react";
 import IFormRenderer from "../formInputs";
 import { Student, StudentCol } from "@/shared/types";
 import FormTextInput from "../FormTextInput";
-import { isValidPastDate } from "@/shared/helpers";
+import { parseDate, yearsSinceCurrTime } from "@/shared/helpers";
 
 function StudentFormInputs({
   itemData,
@@ -21,7 +21,12 @@ function StudentFormInputs({
       value = value.slice(0, 10);
     }
 
-    setValidDob(isValidPastDate(value));
+    const dateOfBirth = parseDate(value);
+    if (dateOfBirth !== undefined) {
+      setValidDob(yearsSinceCurrTime(dateOfBirth) >= 10);
+    } else {
+      setValidDob(false);
+    }
     setItemData({ ...itemData, [StudentCol.DateOfBirth]: value });
   };
 
@@ -55,7 +60,7 @@ function StudentFormInputs({
         errorMessage={!validDob && itemData?.dob ? "Invalid Date of birth" : ""}
         errorDescription={
           !validDob && itemData?.dob
-            ? "Should be MM/DD/YYYY and be a date in the past"
+            ? "Should be MM/DD/YYYY and student should be at least 10 years old."
             : ""
         }
       />

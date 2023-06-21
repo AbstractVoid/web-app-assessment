@@ -31,7 +31,7 @@ function AddItem<T extends ItemBase>({ tableName, FormInputs }: IAddItem<T>) {
           }
         })
         .catch(() => {
-          // TODO: error notification that submission failed
+          toast("Unable to add item");
         })
         .finally(() => {
           setSubmitting(false);
@@ -57,7 +57,7 @@ function AddItem<T extends ItemBase>({ tableName, FormInputs }: IAddItem<T>) {
         disabled={!canSubmit || submitting}
         onClick={onSubmit}
       >
-        SUBMIT
+        Add
       </button>
       {submitting && (
         <div className="flex mx-auto pt-4">
